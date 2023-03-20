@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+botometer = "*"
+pydantic = "*"
+camel-converter = {extras = ["pydantic"], version = "*"}
+
+[dev-packages]
+prospector = "*"
+black = "*"
+
+[requires]
+python_version = "3.9"

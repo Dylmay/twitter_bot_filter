@@ -1,0 +1,10 @@
+{
+  "botometerApiKey": "apiKey",
+  "csvUrlHeader": "csvUrlHeader",
+  "twitterAuth": {
+    "consumerKey": "consumerKey",
+    "consumerSecret": "consumerSecret",
+    "accessToken": "accessToken",
+    "accessTokenSecret": "accessTokenSecret"
+  }
+}
