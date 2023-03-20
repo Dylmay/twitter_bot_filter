@@ -1,5 +1,6 @@
 import csv
 import json
+import logging
 import re
 from argparse import ArgumentParser
 from dataclasses import dataclass
@@ -14,7 +15,7 @@ from pydantic.dataclasses import dataclass
 @dataclass(frozen=True)
 class TwitterBotFilterArgs:
     file_in: str
-    file_out: str
+    file_out: Optional[str]
     config_filename: str
 
 
@@ -72,11 +73,18 @@ def filter_csv(
     with open(csv_filename_in, newline="") as csvfile:
         reader = csv.DictReader(csvfile)
         header = reader.fieldnames
-        rows = [
-            row
-            for row in reader
-            if bom.account_is_human(get_username(row[csv_url_header]))
-        ]
+
+        rows = []
+        for row in reader:
+            username = get_username(row[csv_url_header])
+
+            if username is None:
+                logging.warn("no username found within row", row)
+
+            if bom.account_is_human(username):
+                rows.append(row)
+            else:
+                logging.info("account seems to be a bot", username)
 
     # write
     with open(csv_filename_out, mode="w", newline="") as csvfile:
@@ -88,14 +96,19 @@ def __parse_args() -> TwitterBotFilterArgs:
     parser = ArgumentParser(
         description="Python script used to filter out twitter bots from a csv"
     )
-    parser.add_argument("file_in", nargs=1, help="path to the csv file")
     parser.add_argument(
-        "file_out", nargs=1, help="path to output the filtered csv file"
+        "file_in",
+        help="path to the csv file",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="path to output the filtered csv file",
+        required=False,
     )
     parser.add_argument(
         "-c",
         "--config",
-        nargs=1,
         default="filterConfig.json",
         help="config file location",
     )
@@ -103,8 +116,8 @@ def __parse_args() -> TwitterBotFilterArgs:
     parser_args = parser.parse_args()
 
     return TwitterBotFilterArgs(
-        file_in=parser_args.file_in[0],
-        file_out=parser_args.file_out[0],
+        file_in=parser_args.file_in,
+        file_out=parser_args.output,
         config_filename=parser_args.config,
     )
 
